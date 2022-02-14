@@ -1,0 +1,164 @@
+@import url("https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap");
+
+.header {
+  width: 100%;
+  height: 230px;
+  background-image: url(../images/pattern-bg.png);
+  background-repeat: no-repeat;
+  background-size: cover;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  flex-direction: column;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+}
+.header h1 {
+  font-size: 34px;
+  color: white;
+  font-weight: 500;
+}
+
+.form {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 90%;
+}
+
+.input {
+  width: 35rem;
+  font-size: 1.3rem;
+  height: 35px;
+  border: none;
+  outline: none;
+  padding: 1.3rem;
+  font-family: "Rubik", sans-serif;
+  border-bottom-left-radius: 12px;
+  border-top-left-radius: 12px;
+}
+
+.btn {
+  height: 42px;
+  border-bottom-right-radius: 12px;
+  border-top-right-radius: 12px;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  background-color: hsl(0, 0%, 17%);
+}
+.icon {
+  width: 95%;
+  height: 95%;
+  color: white;
+}
+
+.infoContainer {
+  padding: 2.5rem 4rem;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  top: 190px;
+  display: flex;
+  flex-direction: row;
+  align-self: center;
+  justify-content: center;
+  width: 90vw;
+  border-radius: 1rem;
+  background-color: white;
+  position: absolute;
+  z-index: 10;
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+  height: auto;
+}
+.onebox:first-child::before {
+  content: "";
+  background: transparent;
+}
+.onebox {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  flex-direction: column;
+  color: var(--Dark-Gray);
+  position: relative;
+  margin: 0 4rem;
+  height: auto;
+}
+.onebox:before {
+  content: "";
+  display: inline-block;
+  width: 2px;
+  height: 100px;
+  position: absolute;
+  top: 50%;
+  background: hsl(0, 0%, 80%);
+  transform: translate(-1000%, -50%);
+}
+.onebox strong {
+  text-transform: uppercase;
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: hsl(0, 0%, 80%);
+  display: block;
+}
+.onebox p {
+  color: hsl(0, 0%, 17%);
+  font-size: 2rem;
+  font-weight: 500;
+}
+
+@media screen and (max-width: 1024px) {
+  .onebox {
+    margin: 0 2rem;
+  }
+}
+@media screen and (max-width: 950px) {
+  .infoContainer {
+    flex-direction: column;
+    width: 70%;
+    height: auto;
+    align-items: center;
+    justify-content: center;
+  }
+  .onebox {
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    margin: 1rem 0;
+    text-align: center;
+  }
+  .onebox::before {
+    background: transparent;
+  }
+}
+@media screen and (max-width: 600px) {
+  .form {
+    width: 100%;
+  }
+  .input {
+    width: 80%;
+  }
+}
+
+@media screen and (max-width: 425px) {
+  .infoContainer {
+    flex-direction: column;
+    width: 90%;
+    height: auto;
+    align-items: center;
+    justify-content: center;
+  }
+  .onebox {
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    margin: 0.8rem 0;
+    text-align: center;
+  }
+  .onebox p {
+    color: hsl(0, 0%, 17%);
+    font-size: 1.5rem;
+    font-weight: 500;
+  }
+}
