@@ -1,18 +1,30 @@
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css";
 import "leaflet-defaulticon-compatibility";
+import React, { useEffect, useState } from "react";
+
+export function ChangeView({ coords }) {
+  const map = useMap();
+  map.setView(coords);
+
+  return null;
+}
 
 const Maps = ({ results }) => {
-  console.log(results.latitude);
+  const [geoData, setGeoData] = useState({ lat: 64.536634, lng: 16.779852 });
+  useEffect(() => {
+    setGeoData({ lat: results.latitude, lng: results.longitude });
+  }, [results]);
+  console.log(geoData);
 
   return (
     <MapContainer
-      center={[59.2322, -12.42221]}
-      zoom={14}
+      center={[geoData.lat, geoData.lng]}
+      zoom={12}
       scrollWheelZoom={false}
       style={{
-        height: "800px",
+        height: "600px",
         width: "100%",
         position: "absolute",
         zIndex: "1",
@@ -22,9 +34,10 @@ const Maps = ({ results }) => {
         attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      <Marker position={[59.2322, -12.42221]} draggable={true} animate={true}>
-        <Popup>Hey ! you found me</Popup>
-      </Marker>
+      {geoData.lat && geoData.lng && (
+        <Marker position={[geoData.lat, geoData.lng]} />
+      )}
+      <ChangeView coords={geoData} />
     </MapContainer>
   );
 };
