@@ -5,7 +5,6 @@ const MapsNoSSR = dynamic(() => import("./MapsNoSSR.js"), { ssr: false });
 import dynamic from "next/dynamic";
 
 const Header = () => {
-  let controller = new AbortController();
   const [ipAddress, setIPAddress] = useState("");
   const [results, setResults] = useState([]);
   const handleSubmit = (e) => {
@@ -29,7 +28,7 @@ const Header = () => {
       );
       const data = await res.json();
       setResults(data);
-      // console.log(results);
+
       return results;
     } catch (error) {
       console.log("Error");

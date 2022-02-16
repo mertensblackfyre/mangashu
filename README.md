@@ -27,8 +27,8 @@ Users should be able to:
 
 ### Screenshot
 
-![Desktop](/images/desktop.png)
-![Mobile](/images/mobile.png)
+![Desktop](/ip-address//design/desktop-design.jpg)
+![Mobile](/ip-address/design/mobile-design.jpg)
 
 ### Links
 

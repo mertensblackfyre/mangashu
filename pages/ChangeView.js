@@ -1,8 +1,10 @@
+import { latLng } from "leaflet";
 import { useMap } from "react-leaflet";
 
-export function ChangeView({ coords }) {
+export function ChangeView({ coords, zoom }) {
   const map = useMap();
-  map.setView(coords, map.getZoom());
+  const center = latLng(coords);
+  map.setView(center, zoom);
 
   return null;
 }

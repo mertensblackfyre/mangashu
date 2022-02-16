@@ -3,9 +3,6 @@ import React from "react";
 
 import Header from "./Header.js";
 
-// const MapsNoSSR = dynamic(() => import("./MapsNoSSR.js"), { ssr: false });
-// import dynamic from "next/dynamic";
-
 export default function Home() {
   return (
     <React.StrictMode>
@@ -20,9 +17,6 @@ export default function Home() {
         />
       </Head>
       <Header />
-      {/* <div id="map">
-        <MapsNoSSR />
-      </div> */}
     </React.StrictMode>
   );
 }
