@@ -21,7 +21,7 @@ const Maps = ({ results }) => {
       animate={true}
       scrollWheelZoom={false}
       style={{
-        height: "500px",
+        height: "900px",
         width: "100%",
         position: "absolute",
         zIndex: "1",

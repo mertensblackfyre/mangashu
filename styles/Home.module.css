@@ -144,7 +144,7 @@
 @media screen and (max-width: 425px) {
   .infoContainer {
     flex-direction: column;
-    width: 90%;
+    width: 75%;
     height: auto;
     align-items: center;
     justify-content: center;
