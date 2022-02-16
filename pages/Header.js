@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
+import { noSSR } from "next/dynamic";
 import styles from "../styles/Home.module.css";
 import { ChevronRightIcon } from "@heroicons/react/solid";
-const MapsNoSSR = dynamic(() => import("./MapsNoSSR.js"), { ssr: false });
 import dynamic from "next/dynamic";
+const MapsNoSSR = dynamic(() => import("./MapsNoSSR.js"), { noSSR });
 
 const Header = () => {
   const [ipAddress, setIPAddress] = useState("");
