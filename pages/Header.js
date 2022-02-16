@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { noSSR } from "next/dynamic";
+
 import styles from "../styles/Home.module.css";
 import { ChevronRightIcon } from "@heroicons/react/solid";
 import dynamic from "next/dynamic";
-const MapsNoSSR = dynamic(() => import("./MapsNoSSR.js"), { noSSR });
+const MapsNoSSR = dynamic(() => import("./MapsNoSSR.js"), { ssr: false });
 
 const Header = () => {
   const [ipAddress, setIPAddress] = useState("");
   const [results, setResults] = useState([]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     getData();
