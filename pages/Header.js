@@ -80,10 +80,11 @@ const Header = () => {
           }
         })}
       </section>
-
-      <div id="map">
-        <MapsNoSSR results={results} />
-      </div>
+      {typeof window !== "undefined" && (
+        <div id="map">
+          <MapsNoSSR results={results} />
+        </div>
+      )}
     </>
   );
 };
