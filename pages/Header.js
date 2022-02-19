@@ -30,7 +30,6 @@ const Header = () => {
       );
       const data = await res.json();
       setResults(data);
-
       return results;
     } catch (error) {
       console.log("Error");
