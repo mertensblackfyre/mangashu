@@ -1,24 +1,26 @@
 {
-  "name": "ip-address",
+  "name": "ip-tracker",
   "private": true,
+  "version": "0.0.0",
+  "type": "module",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
-    "@heroicons/react": "^1.0.5",
-    "@react-leaflet/universal-leaflet": "^1.0.1",
-    "leaflet": "^1.7.1",
-    "leaflet-defaulticon-compatibility": "^0.1.1",
-    "next": "12.0.10",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "react-leaflet": "^3.2.5"
+    "@heroicons/react": "^2.0.16",
+    "google-map-react": "^2.2.0",
+    "leaflet": "^1.9.3",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "eslint": "8.9.0",
-    "eslint-config-next": "12.0.10"
+    "@types/leaflet": "^1.9.1",
+    "@types/react": "^18.0.28",
+    "@types/react-dom": "^18.0.10",
+    "@vitejs/plugin-react": "^3.1.0",
+    "typescript": "^4.9.3",
+    "vite": "^4.1.0"
   }
 }
