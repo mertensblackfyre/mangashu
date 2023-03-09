@@ -12,6 +12,7 @@ mapboxgl.accessToken =
 
 const mapContainer = ref<HTMLElement>();
 // console.log(lng);
+// console.log(props);
 
 onMounted(() => {
    const map = new mapboxgl.Map({
@@ -25,15 +26,21 @@ onMounted(() => {
    map.on("style.load", () => {
       map.setFog({});
    });
+   // map.flyTo({
+   //    zoom: 4,
+   //    center: [],
+   //    essential: true,
+   // });
 });
 </script>
 
 <script lang="ts">
 export default {
    name: "GlobeComponent",
-   props: {
-      lng: Number,
-      lat: Number,
+   data() {
+      return {
+         coor: [-74.5, 40],
+      };
    },
 };
 </script>
