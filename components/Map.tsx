@@ -39,3 +39,39 @@ const Map = () => {
 };
 
 export default Map;
+
+methods: {
+   async fly() {
+      try {
+         const response = await axios.get(
+            `${geoCodingURL}?text=${this.text}&apiKey=f1ee77bd589648639821fc26719d7a45`,
+            {
+               withCredentials: false,
+            }
+         );
+         // "country=us&" +
+         // "apiKey=53ae439ca1624a9a9870e92d88f4bbdd"
+         const resp = await axios.get(
+            `${newsURL}?country=${this.text}&apiKey=53ae439ca1624a9a9870e92d88f4bbdd`,
+            {
+               withCredentials: false,
+            }
+         );
+
+         // map.flyTo({
+         //    zoom: 4,
+         //    center: [
+         //       response?.data?.features[0].geometry.coordinates[0],
+         //       response?.data?.features[0].geometry.coordinates[1],
+         //    ],
+         //    essential: true,
+         // });
+
+         console.log(resp, response);
+      } catch (error) {
+         console.log("====================================");
+         console.log(error);
+         console.log("====================================");
+      }
+   },
+},
