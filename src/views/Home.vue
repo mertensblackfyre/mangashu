@@ -41,7 +41,6 @@ export default {
          const data = await this.getGeoCodingData();
          this.coordinates = data.features[0]["geometry"]["coordinates"];
          this.country = country;
-         console.log(this.coordinates[1]);
       },
    },
 };
