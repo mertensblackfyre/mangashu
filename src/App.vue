@@ -1,26 +1,12 @@
 <template>
-   <main class="w-screen h-screen relative">
-      <SearchInput />
-      <Globe :response="data" />
-   </main>
+   <HomeView />
 </template>
 
 <script lang="ts">
-import { defineComponent, Ref } from "vue";
-import SearchInput from "./components/SearchInput.vue";
-import Globe from "./components/Globe.vue";
-import { handleSubmit } from "./api/data";
-
-// const newsURL = `https://newsapi.org/v2/top-headlines`;
-export default defineComponent({
-   name: "App",
+import HomeView from "./views/Home.vue";
+export default {
    components: {
-      SearchInput,
-      Globe,
+      HomeView,
    },
-   setup() {
-      let res: { data: Ref<never[]>; err: unknown } = handleSubmit();
-      return { res };
-   },
-});
+};
 </script>
