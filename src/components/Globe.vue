@@ -24,8 +24,7 @@ export default {
    methods: {
       async createMap() {
          try {
-            mapboxgl.accessToken =
-               "pk.eyJ1IjoiYW1yODY0NCIsImEiOiJja3pqemhkcDkwMnJyMnZtbndlb2Y2NnVjIn0.rlFLYSYDyp5BgsWIA2o9cQ";
+            mapboxgl.accessToken = process.env.MAP_KEY;
 
             const map = new mapboxgl.Map({
                container: "map",

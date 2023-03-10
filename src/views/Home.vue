@@ -27,7 +27,7 @@ export default {
    methods: {
       async getGeoCodingData() {
          const response = await axios.get(
-            `${geoCodingURL}?text=${this.country}&apiKey=f1ee77bd589648639821fc26719d7a45`,
+            `${geoCodingURL}?text=${this.country}&apiKey=${process.env.GEO_CODE_KEY}`,
             {
                withCredentials: false,
             }
