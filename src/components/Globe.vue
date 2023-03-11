@@ -1,5 +1,5 @@
 <template>
-   <div ref="map" id="map" class="w-full h-full"></div>
+   <div ref="map" id="map" class="w-screen h-screen"></div>
 </template>
 
 <script lang="ts">
@@ -7,7 +7,6 @@ import mapboxgl from "mapbox-gl";
 
 import "mapbox-gl/dist/mapbox-gl.css";
 import { defineComponent, onUpdated } from "vue";
-
 
 export default defineComponent({
    name: "GlobeComponent",
@@ -38,7 +37,6 @@ export default defineComponent({
                   center: this.coordinates,
                   zoom: 4,
                });
-               
             });
             return;
          } catch (error: any) {
