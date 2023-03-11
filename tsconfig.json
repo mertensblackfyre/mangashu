@@ -4,7 +4,7 @@
       "module": "esnext",
       "strict": true,
       "jsx": "preserve",
-
+      "allowJs": true,
       "importHelpers": true,
       "moduleResolution": "node",
       "experimentalDecorators": true,
@@ -28,6 +28,7 @@
       "tests/**/*.ts",
       "tests/**/*.tsx"
    ],
+
    "exclude": ["node_modules"],
    "types": ["@types/mapbox-gl"]
 }

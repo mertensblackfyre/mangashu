@@ -6,9 +6,11 @@
 import mapboxgl from "mapbox-gl";
 
 import "mapbox-gl/dist/mapbox-gl.css";
-import { onUpdated } from "vue";
+import { defineComponent, onUpdated } from "vue";
+// import * as dotenv from "dotenv";
+// dotenv.config();
 
-export default {
+export default defineComponent({
    name: "GlobeComponent",
    props: ["coordinates", "country"],
    data() {
@@ -22,9 +24,9 @@ export default {
    },
 
    methods: {
-      async createMap() {
+      async createMap(): Promise<void> {
          try {
-            mapboxgl.accessToken = process.env.MAP_KEY;
+            mapboxgl.accessToken = process.env.VUE_APP_MAP_KEY;
 
             const map = new mapboxgl.Map({
                container: "map",
@@ -37,11 +39,13 @@ export default {
                   center: this.coordinates,
                   zoom: 4,
                });
+               
             });
+            return;
          } catch (error: any) {
             console.log(error);
          }
       },
    },
-};
+});
 </script>

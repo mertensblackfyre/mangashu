@@ -1,5 +1,5 @@
 <template>
-   <div class="flex flex-row w-full">
+   <div class="flex flex-row absolute left-1/2 z-50">
       <input
          v-model="country"
          type="search"
@@ -18,7 +18,9 @@
 </template>
 
 <script lang="ts">
-export default {
+import { defineComponent } from "vue";
+
+export default defineComponent({
    name: "SearchInput",
    data() {
       return {
@@ -29,7 +31,8 @@ export default {
       onChange(country: string) {
          this.country = country;
          this.$emit("get-country", this.country);
+         return;
       },
    },
-};
+});
 </script>
