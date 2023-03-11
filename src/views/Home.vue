@@ -9,7 +9,7 @@
 import SearchInput from "../components/SearchInput.vue";
 import GlobeComponent from "../components/Globe.vue";
 import axios from "axios";
-import lookup from "country-code-lookup";
+// import lookup from "country-code-lookup";
 import { defineComponent } from "vue";
 
 const geoCodingURL = "https://api.geoapify.com/v1/geocode/search";

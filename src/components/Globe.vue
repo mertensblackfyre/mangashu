@@ -7,8 +7,7 @@ import mapboxgl from "mapbox-gl";
 
 import "mapbox-gl/dist/mapbox-gl.css";
 import { defineComponent, onUpdated } from "vue";
-// import * as dotenv from "dotenv";
-// dotenv.config();
+
 
 export default defineComponent({
    name: "GlobeComponent",
