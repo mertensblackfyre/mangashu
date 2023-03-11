@@ -1,7 +1,7 @@
 <template>
    <main class="h-screen w-screen relative">
-      <SearchInput @get-country="getCountry" />
-      <GlobeComponent :coordinates="coordinates" :country="country" />
+      <SearchInput @get-ip="getIPAddress" />
+      <GlobeComponent :coordinates="coordinates" :ip="ip" />
    </main>
 </template>
 
@@ -9,11 +9,10 @@
 import SearchInput from "../components/SearchInput.vue";
 import GlobeComponent from "../components/Globe.vue";
 import axios from "axios";
-// import lookup from "country-code-lookup";
+
 import { defineComponent } from "vue";
 
-const geoCodingURL = "https://api.geoapify.com/v1/geocode/search";
-const newsURL = `https://newsapi.org/v2/top-headlines`;
+const newsURL = `https://geo.ipify.org/api/v2/country,city?apiKey=${process.env.VUE_APP_GEO_CODER_KEY}`;
 
 export default defineComponent({
    name: "HomeView",
@@ -23,22 +22,18 @@ export default defineComponent({
    },
    data() {
       return {
-         country: "Spain",
+         ip: "176.224.81.52",
          coordinates: [21.21, -12.21],
+         data: {},
       };
    },
    methods: {
-      capitalizeFirstLetter(string: string): string {
-         return string.charAt(0).toUpperCase() + string.slice(1);
-      },
-      async getGeoCodingData(country: string) {
+      async getIPData(ip: string) {
          try {
-            const response = await axios.get(
-               `${geoCodingURL}?text=${country}&apiKey=${process.env.VUE_APP_GEO_CODER_KEY}`,
-               {
-                  withCredentials: false,
-               }
-            );
+            const response = await axios.get(`${newsURL}&ipAddress=${ip}`, {
+               withCredentials: false,
+            });
+
             if (!response) {
                throw new Error("No data");
             }
@@ -48,30 +43,11 @@ export default defineComponent({
             console.log(error);
          }
       },
-      async getNews(country: any) {
-         try {
-            const resp = await axios.get(
-               `${newsURL}?country=${country}&apiKey=${process.env.VUE_APP_NEWS_KEY}`,
-               {
-                  withCredentials: false,
-               }
-            );
-            return resp.data;
-         } catch (error) {
-            console.log(error);
-         }
-      },
-      async getCountry(country: string) {
-         this.country = country;
-         // const countryCode = lookup.byCountry(
-         //    this.capitalizeFirstLetter(country)
-         // );
-         // const data = await this.getNews(countryCode?.fips.toLowerCase());
 
-         // console.log(data);
-
-         const data = await this.getGeoCodingData(this.country);
-         this.coordinates = data.features[0]["geometry"]["coordinates"];
+      async getIPAddress(ip: string) {
+         this.ip = ip;
+         const data = await this.getIPData(this.ip);
+         this.coordinates = [data?.location?.lng, data?.location?.lat];
          return;
       },
    },

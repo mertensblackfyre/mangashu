@@ -20,7 +20,7 @@
                </svg>
             </div>
             <input
-               v-model="country"
+               v-model="ip"
                type="text"
                id="simple-search"
                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5"
@@ -29,7 +29,7 @@
             />
          </div>
          <button
-            @click="onChange(country)"
+            @click="onChange(ip)"
             type="submit"
             class="p-2.5 ml-2 text-sm font-medium text-white bg-blue-700 rounded-lg border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300"
          >
@@ -59,13 +59,13 @@ export default defineComponent({
    name: "SearchInput",
    data() {
       return {
-         country: "",
+         ip: "",
       };
    },
    methods: {
-      onChange(country: string) {
-         this.country = country;
-         this.$emit("get-country", this.country);
+      onChange(ip: string) {
+         this.ip = ip;
+         this.$emit("get-ip", this.ip);
          return;
       },
    },

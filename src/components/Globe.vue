@@ -10,7 +10,7 @@ import { defineComponent, onUpdated } from "vue";
 
 export default defineComponent({
    name: "GlobeComponent",
-   props: ["coordinates", "country"],
+   props: ["coordinates", "country", "data"],
    data() {
       return {
          map: {},
@@ -35,8 +35,9 @@ export default defineComponent({
             onUpdated(() => {
                map.flyTo({
                   center: this.coordinates,
-                  zoom: 4,
+                  zoom: 14,
                });
+               new mapboxgl.Marker().setLngLat(this.coordinates).addTo(map);
             });
             return;
          } catch (error: any) {
