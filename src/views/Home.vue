@@ -8,6 +8,7 @@
 <script lang="ts">
 import SearchInput from "../components/SearchInput.vue";
 import GlobeComponent from "../components/Globe.vue";
+// import DataComponent from "../components/DataComponet.vue";
 import axios from "axios";
 
 import { defineComponent } from "vue";
@@ -19,6 +20,7 @@ export default defineComponent({
    components: {
       SearchInput,
       GlobeComponent,
+      // DataComponent,
    },
    data() {
       return {
