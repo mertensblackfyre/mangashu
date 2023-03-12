@@ -24,7 +24,7 @@ export default defineComponent({
    },
    data() {
       return {
-         ip: "176.224.81.52",
+         ip: "",
          coordinates: [21.21, -12.21],
          data: {},
       };
