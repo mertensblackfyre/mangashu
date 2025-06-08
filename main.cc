@@ -1,57 +1,75 @@
-#include <ImageMagick-7/Magick++.h>
-#include <ImageMagick-7/Magick++/Image.h>
-#include <ImageMagick-7/Magick++/Include.h>
-#include <ImageMagick-7/Magick++/STL.h>
 #include <algorithm>
+#include <cstddef>
 #include <cstring>
-#include <exception>
+#include <dirent.h>
+#include <vector>
+
 #include <iostream>
 
-#include <dirent.h>
+int extract_num(const std::string &filename);
+void sort_files(std::vector<std::vector<std::string>> &chapters);
+void get_files(std::vector<std::vector<std::string>> &chapters,
+               std::string path);
 
+int main() {
+  std::vector<std::vector<std::string>> chapters;
 
-// Custom sorting function for natural numeric order (e.g., "1.png" < "10.png")
-bool naturalSort(const std::string &a, const std::string &b) {
-    return a < b; // Replace with a proper natural sort if needed (see notes below)
+  get_files(chapters, "tmp");
+  sort_files(chapters);
+
+  /*
+  for (auto pages : chapters) {
+    for (auto s : pages) {
+      std::cout << s << std::endl;
+    }
+    std::cout << "---------" << std::endl;
+  };
+*/
+  return 0;
 }
 
-int main(int argc, char **argv) {
-  Magick::InitializeMagick(*argv);
-  Magick::Image image;
-  std::vector<Magick::Image> images;
-  std::vector<std::string> img_files;
+int extract_num(const std::string &filename) {
+  size_t hyphen_pos = filename.find('-');
 
+  if (hyphen_pos == std::string::npos)
+    return 0;
+
+  return std::stoi(filename.substr(0, hyphen_pos));
+}
+
+void get_files(std::vector<std::vector<std::string>> &chapters,
+               std::string path) {
   struct dirent *dir;
-  DIR *dp = opendir("1");
+
+  std::vector<std::string> pages;
+
+  DIR *dp = opendir(path.c_str());
   if (dp) {
     while ((dir = readdir(dp)) != NULL) {
       if (strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0)
         continue;
 
-      std::string s(dir->d_name);
-      img_files.push_back(s);
+      if (dir->d_type == DT_DIR) {
+        std::string str_path = path + "/" + dir->d_name;
+        get_files(chapters, str_path);
+      } else {
+        std::string s(dir->d_name);
+        pages.push_back(s);
+      };
     }
   }
-  // Sort files naturally (1.png, 2.png, ..., 10.png)
-       std::sort(img_files.begin(), img_files.end(), naturalSort);
-
-  try {
-
-    for (const auto &file : img_files) {
-        std::cout << file << std::endl;
-      std::string f = "1/" + file;
-      images.emplace_back(f);
-    };
-    // Magick::writeImages(images.begin(),images.end(),"out.pdf");
-
-  } catch (std::exception &error_) {
-    std::cerr << "Magick++ error: " << error_.what() << std::endl;
-    return 1;
-  }
-  return 0;
+  chapters.emplace_back(pages);
+  closedir(dp);
 }
 
-// The QuickSort function implementation
-void quickSort(std::vector<std::string> &arr) {
-
+void sort_files(std::vector<std::vector<std::string>> &chapters) {
+  for (auto pages : chapters) {
+ for (auto s : pages) {
+      std::cout << s << std::endl;
+    }
+    std::sort(pages.begin(), pages.end(),
+              [](const std::string &a, const std::string &b) {
+                return extract_num(a) < extract_num(b);
+              });
+  }
 }
