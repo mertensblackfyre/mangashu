@@ -2,11 +2,6 @@
 #include <cstring>
 #include <dirent.h>
 #include <vector>
-#include <ImageMagick-7/Magick++.h>
-#include <ImageMagick-7/Magick++/Image.h>
-#include <ImageMagick-7/Magick++/Include.h>
-#include <ImageMagick-7/Magick++/STL.h>
-
 #include <iostream>
 
 int extract_num(const std::string &filename);
