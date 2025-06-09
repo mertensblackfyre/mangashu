@@ -2,14 +2,15 @@
 #include <cstddef>
 #include <cstring>
 #include <dirent.h>
+#include <tuple>
 #include <vector>
 
 #include <iostream>
 
 void pdf_convert();
 
-void extract_name(const std::string &path)
-int extract_num(const std::string &path);
+std::tuple<std::string, std::string> extract_name(const std::string &path);
+int extract_num(const std::string &filename);
 void sort_files(std::vector<std::string> &pages);
 void get_files(std::vector<std::vector<std::string>> &chapters,
                std::string path);
@@ -27,24 +28,23 @@ int main() {
   return 0;
 }
 
-int extract_num(const std::string &path) {
+std::tuple<std::string, std::string> extract_name(const std::string &path){
 
-    size_t slow = path.find('/');
-    size_t fast = -1;
-    while ((fast = path.find('/', slow + 1)) !=
-            std::string::npos){
+    size_t first = path.find('/');
+    size_t second = path.find('/', first + 1);
 
-   std::cout << path.substr(res);
+    std::string dir_name = path.substr(first, second-3);
+    std::string file_name = path.substr(second+1,path.size());
 
-            };
- // size_t hyphen_pos = path.find('-');
+   return {dir_name, file_name};
+};
 
-  //if (hyphen_pos == std::string::npos)
-   // return 0;
-
-   return 1;
- // return std::stoi(path.substr(0, hyphen_pos));
-}
+int extract_num(const std::string &filename) {
+    size_t hyphen_pos = filename.find('-');
+    if (hyphen_pos == std::string::npos)
+      return 0;
+    return std::stoi(filename.substr(0, hyphen_pos));
+};
 /*
 
 void pdf_convert(char **argv,std::string path ,std::vector<std::vector<std::string>> &chapters) {
@@ -96,8 +96,11 @@ void get_files(std::vector<std::vector<std::string>> &chapters,
 }
 
 void sort_files(std::vector<std::string> &pages) {
-  std::sort(pages.begin(), pages.end(),
-            [](const std::string &a, const std::string &b) {
-              return extract_num(a) < extract_num(b);
-            });
+  // std::sort(pages.begin(), pages.end(),
+  //           [](const std::string &a, const std::string &b) {
+  //             return extract_num(a) < extract_num(b);
+  //           });
+  //
+  if(!pages.empty())
+    extract_num(pages[0]);
 };
