@@ -1,9 +1,9 @@
-#include <algorithm>
 #include <cstddef>
 #include <cstring>
 #include <dirent.h>
 #include <tuple>
 #include <vector>
+#include <algorithm>
 
 #include <iostream>
 
@@ -33,17 +33,20 @@ std::tuple<std::string, std::string> extract_name(const std::string &path){
     size_t first = path.find('/');
     size_t second = path.find('/', first + 1);
 
-    std::string dir_name = path.substr(first, second-3);
+    std::string dir_name = path.substr(first, second - 3);
     std::string file_name = path.substr(second+1,path.size());
 
    return {dir_name, file_name};
 };
 
-int extract_num(const std::string &filename) {
-    size_t hyphen_pos = filename.find('-');
+int extract_num( std::string &filename) {
+
+    auto [dir_name ,file_name] = extract_name(filename);
+    size_t hyphen_pos = file_name.find('-');
     if (hyphen_pos == std::string::npos)
       return 0;
-    return std::stoi(filename.substr(0, hyphen_pos));
+
+       return std::stoi(filename.substr(0, hyphen_pos));
 };
 /*
 
@@ -93,14 +96,12 @@ void get_files(std::vector<std::vector<std::string>> &chapters,
   sort_files(pages);
   chapters.emplace_back(pages);
   closedir(dp);
-}
+};
 
 void sort_files(std::vector<std::string> &pages) {
-  // std::sort(pages.begin(), pages.end(),
-  //           [](const std::string &a, const std::string &b) {
-  //             return extract_num(a) < extract_num(b);
-  //           });
-  //
-  if(!pages.empty())
-    extract_num(pages[0]);
+  std::sort(pages.begin(), pages.end(),
+            [](const std::string &a, const std::string &b) {
+              return extract_num(a) < extract_num(b);
+            });
+
 };
