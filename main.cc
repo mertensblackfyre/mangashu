@@ -8,10 +8,14 @@
 #include <cstring>
 #include <dirent.h>
 #include <exception>
+#include <filesystem>
 #include <iostream>
 #include <tuple>
 #include <unistd.h>
 #include <vector>
+#include <sys/stat.h>
+#include <sys/types.h>
+
 
 void pdf_convert(std::vector<std::vector<std::string>> &chapters);
 std::tuple<std::string, std::string> extract_name(const std::string &path);
@@ -21,28 +25,16 @@ void get_files(std::vector<std::vector<std::string>> &chapters,
                std::string path);
 
 int main(int argc, char **argv) {
-
   std::vector<std::vector<std::string>> chapters;
 
   Magick::InitializeMagick(*argv);
   get_files(chapters, "tmp");
 
-  /*
   if (mkdir("output", 0777) == -1) {
     spdlog::error("{}", strerror(errno));
-    return -1;
   } else {
     spdlog::info("output directory created");
-    std::filesystem::path newDir =
-        "/home/mertens/Desktop/Projects/mangashu/build/output";
-    try {
-      std::filesystem::current_path(newDir);
-    } catch (const std::filesystem::filesystem_error &e) {
-      spdlog::error("Error changing directory {}", e.what());
-      return -1;
-    }
   }
-  */
 
   pdf_convert(chapters);
   return 0;
@@ -135,13 +127,43 @@ void pdf_convert(std::vector<std::vector<std::string>> &chapters) {
         break;
       }
       auto [dir_name, file_name] = extract_name(pages[0]);
-      std::string pdf_name =
-          "output/" + dir_name.substr(1, dir_name.size()) + ".pdf";
+      std::string pdf_name = dir_name.substr(1, dir_name.size()) + ".pdf";
       Magick::writeImages(images.begin(), images.end(), pdf_name);
       spdlog::info(" Converted {} to pdf", dir_name.substr(1, dir_name.size()));
       images.clear();
     };
   } catch (std::exception &error_) {
     spdlog::error("Magick++ error {}", error_.what());
+  }
+
+  struct dirent *dir;
+  DIR *dp = opendir(".");
+  if (dp) {
+    while ((dir = readdir(dp)) != NULL) {
+      if (strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0)
+        continue;
+
+      std::string s(dir->d_name);
+      size_t dot_pos = s.find(".");
+      std::string extension = s.substr(dot_pos + 1, s.size());
+
+      if (std::strcmp(extension.c_str(), "pdf") == 0) {
+
+        try {
+
+          std::string curr_path = std::filesystem::current_path().c_str();
+          std::string new_name = curr_path + "/output/" + s;
+
+          std::filesystem::rename(s, new_name);
+          std::cout << "File moved successfully." << std::endl;
+        } catch (const std::filesystem::filesystem_error &e) {
+          std::cerr << "Error moving file: " << e.what() << std::endl;
+        }
+      }
+    }
+  } else {
+    spdlog::error("File does not exist");
+    closedir(dp);
+    return;
   }
 }
