@@ -1,4 +1,8 @@
 #include <cstddef>
+#include <ImageMagick-7/Magick++.h>
+#include <ImageMagick-7/Magick++/Image.h>
+#include <ImageMagick-7/Magick++/Include.h>
+#include <ImageMagick-7/Magick++/STL.h>
 #include <cstring>
 #include <dirent.h>
 #include <exception>
@@ -8,27 +12,30 @@
 
 #include <iostream>
 
-void pdf_convert();
 
+void pdf_convert(std::string path ,std::vector<std::vector<std::string>> &chapters);
 std::tuple<std::string, std::string> extract_name(const std::string &path);
 int extract_num(std::string &filename);
 void sort_files(std::vector<std::string> &pages);
 void get_files(std::vector<std::vector<std::string>> &chapters,
                std::string path);
 
-int main() {
+int main(int argc, char **argv) {
   std::vector<std::vector<std::string>> chapters;
 
+  Magick::InitializeMagick(*argv);
+ // std::string path = "tmp";
   get_files(chapters, "tmp");
-  for (auto pages : chapters) {
-     for (auto s : pages) {
-       std::cout << s << std::endl;
-     }
-     std::cout << "---------" << std::endl;
- };
+  pdf_convert("tmp",chapters);
+ //  for (auto pages : chapters) {
+ //     for (auto s : pages) {
+ //       std::cout << s << std::endl;
+ //     }
+ //     std::cout << "---------" << std::endl;
+ // };
 
   return 0;
-}
+};
 
 std::tuple<std::string, std::string> extract_name(const std::string &path){
 
@@ -93,26 +100,20 @@ void sort_files(std::vector<std::string> &pages) {
             });
 };
 
-/*
 
-void pdf_convert(char **argv,std::string path ,std::vector<std::vector<std::string>> &chapters) {
-  Magick::InitializeMagick(*argv);
+void pdf_convert(std::string path ,std::vector<std::vector<std::string>> &chapters) {
   Magick::Image image;
   std::vector<Magick::Image> images;
 
-  std::vector<std::vector<Magick::Image>> images;
   try {
     for (auto pages : chapters) {
-        for (auto files: page) {
-            std::string f = path + files;
-            images.emplace_back(f);
+        for (auto files: pages) {
+            images.emplace_back(files);
         }
     };
     Magick::writeImages(images.begin(), images.end(), "out.pdf");
 
   } catch (std::exception &error_) {
     std::cerr << "Magick++ error: " << error_.what() << std::endl;
-    return 1;
   }
 }
-*/
