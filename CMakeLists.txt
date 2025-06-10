@@ -29,8 +29,4 @@ target_link_libraries(MangaShu PRIVATE
     spdlog::spdlog
 )
 
-target_link_libraries(MangaShu PRIVATE
-    Magick++
-    MagickWand
-    MagickCore
-)
+

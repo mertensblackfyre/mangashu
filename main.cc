@@ -1,3 +1,4 @@
+#include "spdlog/spdlog.h"
 #include <ImageMagick-7/Magick++.h>
 #include <ImageMagick-7/Magick++/Image.h>
 #include <ImageMagick-7/Magick++/Include.h>
@@ -7,11 +8,10 @@
 #include <cstring>
 #include <dirent.h>
 #include <exception>
-#include <tuple>
-#include <vector>
-#include "spdlog/spdlog.h"
-
 #include <iostream>
+#include <tuple>
+#include <unistd.h>
+#include <vector>
 
 void pdf_convert(std::vector<std::vector<std::string>> &chapters);
 std::tuple<std::string, std::string> extract_name(const std::string &path);
@@ -21,12 +21,30 @@ void get_files(std::vector<std::vector<std::string>> &chapters,
                std::string path);
 
 int main(int argc, char **argv) {
+
   std::vector<std::vector<std::string>> chapters;
 
   Magick::InitializeMagick(*argv);
   get_files(chapters, "tmp");
-  pdf_convert(chapters);
 
+  /*
+  if (mkdir("output", 0777) == -1) {
+    spdlog::error("{}", strerror(errno));
+    return -1;
+  } else {
+    spdlog::info("output directory created");
+    std::filesystem::path newDir =
+        "/home/mertens/Desktop/Projects/mangashu/build/output";
+    try {
+      std::filesystem::current_path(newDir);
+    } catch (const std::filesystem::filesystem_error &e) {
+      spdlog::error("Error changing directory {}", e.what());
+      return -1;
+    }
+  }
+  */
+
+  pdf_convert(chapters);
   return 0;
 };
 
@@ -52,9 +70,9 @@ int extract_num(std::string &filename) {
   try {
     num = std::stoi(file_name.substr(0, hyphen_pos));
   } catch (std::exception error_) {
-    std::cerr << "Error: " << error_.what() << std::endl;
+    spdlog::error("{}", error_.what());
+    return -1;
   }
-
   return num;
 };
 
@@ -79,6 +97,10 @@ void get_files(std::vector<std::vector<std::string>> &chapters,
         pages.push_back(final_path);
       };
     }
+  } else {
+    spdlog::error("{} does not exist", path.c_str());
+    closedir(dp);
+    return;
   }
   sort_files(pages);
   chapters.emplace_back(pages);
@@ -88,7 +110,7 @@ void get_files(std::vector<std::vector<std::string>> &chapters,
 void sort_files(std::vector<std::string> &pages) {
 
   if (pages.empty()) {
-    std::cerr << "[X] Error: Pages are empty" << std::endl;
+    spdlog::error("Pages vector is empty");
     return;
   };
   auto [dir_name, file_name] = extract_name(pages[0]);
@@ -96,8 +118,7 @@ void sort_files(std::vector<std::string> &pages) {
     return extract_num(a) < extract_num(b);
   });
 
-  std::cout << "[] " <<  dir_name.substr(1, dir_name.size())  << " have been sorted" << std::endl;
-
+  spdlog::info("{} have been sorted", dir_name.substr(1, dir_name.size()));
 };
 
 void pdf_convert(std::vector<std::vector<std::string>> &chapters) {
@@ -110,17 +131,17 @@ void pdf_convert(std::vector<std::vector<std::string>> &chapters) {
         images.emplace_back(files);
 
       if (pages.empty()) {
-        std::cerr << "[X] Error: Pages are empty" << std::endl;
+        spdlog::error("Pages vector is empty");
         break;
       }
       auto [dir_name, file_name] = extract_name(pages[0]);
-      std::string pdf_name = dir_name.substr(1, dir_name.size()) + ".pdf";
+      std::string pdf_name =
+          "output/" + dir_name.substr(1, dir_name.size()) + ".pdf";
       Magick::writeImages(images.begin(), images.end(), pdf_name);
-      std::cout << "[] Converted " << dir_name << " to pdf" << std::endl;
+      spdlog::info(" Converted {} to pdf", dir_name.substr(1, dir_name.size()));
       images.clear();
     };
-
   } catch (std::exception &error_) {
-    std::cerr << "Magick++ error: " << error_.what() << std::endl;
+    spdlog::error("Magick++ error {}", error_.what());
   }
 }
