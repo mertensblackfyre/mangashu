@@ -10,13 +10,16 @@
 #include <exception>
 #include <filesystem>
 #include <iostream>
+#include <string>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <tuple>
 #include <unistd.h>
 #include <vector>
-#include <sys/stat.h>
-#include <sys/types.h>
 
-
+void create_dir(std::string dir);
+void move_files(std::string new_path, std::string extensions);
+void pdf_combine(std::string path, int num_ch);
 void pdf_convert(std::vector<std::vector<std::string>> &chapters);
 std::tuple<std::string, std::string> extract_name(const std::string &path);
 int extract_num(std::string &filename);
@@ -28,18 +31,21 @@ int main(int argc, char **argv) {
   std::vector<std::vector<std::string>> chapters;
 
   Magick::InitializeMagick(*argv);
-  get_files(chapters, "tmp");
+  // get_files(chapters, "tmp");
 
-  if (mkdir("output", 0777) == -1) {
+  // create_dir("output");
+  // pdf_convert(chapters);
+  pdf_combine("output", 4);
+  return 0;
+};
+
+void create_dir(std::string dir) {
+  if (mkdir(dir.c_str(), 0777) == -1) {
     spdlog::error("{}", strerror(errno));
   } else {
     spdlog::info("output directory created");
   }
-
-  pdf_convert(chapters);
-  return 0;
-};
-
+}
 std::tuple<std::string, std::string> extract_name(const std::string &path) {
 
   size_t first = path.find('/');
@@ -136,6 +142,11 @@ void pdf_convert(std::vector<std::vector<std::string>> &chapters) {
     spdlog::error("Magick++ error {}", error_.what());
   }
 
+  move_files("/output/", "pdf");
+}
+
+void move_files(std::string new_path, std::string extension) {
+
   struct dirent *dir;
   DIR *dp = opendir(".");
   if (dp) {
@@ -145,18 +156,16 @@ void pdf_convert(std::vector<std::vector<std::string>> &chapters) {
 
       std::string s(dir->d_name);
       size_t dot_pos = s.find(".");
-      std::string extension = s.substr(dot_pos + 1, s.size());
+      std::string curr_extension = s.substr(dot_pos + 1, s.size());
 
-      if (std::strcmp(extension.c_str(), "pdf") == 0) {
-
+      if (std::strcmp(curr_extension.c_str(), extension.c_str()) == 0) {
         try {
-
           std::string curr_path = std::filesystem::current_path().c_str();
-          std::string new_name = curr_path + "/output/" + s;
-
+          std::string new_name = curr_path + new_path + s;
           std::filesystem::rename(s, new_name);
-          std::cout << "File moved successfully." << std::endl;
+          spdlog::info("{} move successfully", s);
         } catch (const std::filesystem::filesystem_error &e) {
+          spdlog::error("Error moving {} {}", s, e.what());
           std::cerr << "Error moving file: " << e.what() << std::endl;
         }
       }
@@ -167,3 +176,62 @@ void pdf_convert(std::vector<std::vector<std::string>> &chapters) {
     return;
   }
 }
+
+void pdf_combine(std::string path, int num_ch) {
+  struct dirent *dir;
+
+  int curr_ch = 0;
+  std::vector<std::string> pages;
+
+  DIR *dp = opendir(path.c_str());
+  if (dp) {
+    while ((dir = readdir(dp)) != NULL && curr_ch != num_ch) {
+
+      if (strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0)
+        continue;
+
+      if (dir->d_type == DT_DIR) {
+        continue;
+      };
+      std::string s(dir->d_name);
+      size_t dot_pos = s.find(".");
+      if (dot_pos == std::string::npos) {
+        std::cout << "here";
+        return;
+      }
+
+      std::string curr_extension = s.substr(dot_pos + 1, s.size() - 1);
+      std::string exe = "pdf";
+      if (std::strncmp(curr_extension.c_str(), exe.c_str(), 3) == 0) {
+        // pages.emplace_back(s);
+        pages.push_back(s);
+        curr_ch++;
+      }
+    }
+  } else {
+    spdlog::error("{} does not exist", path.c_str());
+    closedir(dp);
+    return;
+  }
+  sort_files(pages);
+  closedir(dp);
+
+  try {
+    std::vector<Magick::Image> img;
+
+    for (const auto &file : pages) {
+
+      std::vector<Magick::Image> currentPDF;
+      readImages(&currentPDF, file);
+
+      for (auto &page : currentPDF) {
+        img.push_back(page);
+      }
+    }
+
+    // Write all pages to a single PDF
+    Magick::writeImages(img.begin(), img.end(), "vol1.pdf");
+  } catch (std::exception &error) {
+    spdlog::error("{}", error.what());
+  }
+};
