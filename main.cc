@@ -13,7 +13,7 @@
 #include <iostream>
 
 
-void pdf_convert(std::string path ,std::vector<std::vector<std::string>> &chapters);
+void pdf_convert(std::vector<std::vector<std::string>> &chapters);
 std::tuple<std::string, std::string> extract_name(const std::string &path);
 int extract_num(std::string &filename);
 void sort_files(std::vector<std::string> &pages);
@@ -24,15 +24,9 @@ int main(int argc, char **argv) {
   std::vector<std::vector<std::string>> chapters;
 
   Magick::InitializeMagick(*argv);
- // std::string path = "tmp";
   get_files(chapters, "tmp");
-  pdf_convert("tmp",chapters);
- //  for (auto pages : chapters) {
- //     for (auto s : pages) {
- //       std::cout << s << std::endl;
- //     }
- //     std::cout << "---------" << std::endl;
- // };
+  pdf_convert(chapters);
+
 
   return 0;
 };
@@ -55,7 +49,6 @@ int extract_num( std::string &filename) {
     if (hyphen_pos == std::string::npos)
         return 0;
 
-    //std::cout << filename.substr(0, hyphen_pos) << std::endl;
     int num;
         try {
              num =  std::stoi(file_name.substr(0, hyphen_pos));
@@ -101,17 +94,22 @@ void sort_files(std::vector<std::string> &pages) {
 };
 
 
-void pdf_convert(std::string path ,std::vector<std::vector<std::string>> &chapters) {
+void pdf_convert(std::vector<std::vector<std::string>> &chapters) {
   Magick::Image image;
   std::vector<Magick::Image> images;
 
   try {
     for (auto pages : chapters) {
-        for (auto files: pages) {
+        for (auto files: pages)
             images.emplace_back(files);
-        }
+
+        if(pages.empty())
+            break;
+        auto [dir_name, file_name] = extract_name(pages[0]);
+        std::string pdf_name = dir_name.substr(1,dir_name.size()) + ".pdf";
+        Magick::writeImages(images.begin(), images.end(),pdf_name);
+        images.clear();
     };
-    Magick::writeImages(images.begin(), images.end(), "out.pdf");
 
   } catch (std::exception &error_) {
     std::cerr << "Magick++ error: " << error_.what() << std::endl;
