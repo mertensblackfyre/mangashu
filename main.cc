@@ -27,14 +27,19 @@ void sort_files(std::vector<std::string> &pages);
 void get_files(std::vector<std::vector<std::string>> &chapters,
                std::string path);
 
+int __extract_num(std::string &file_name);
+void __sort_files(std::vector<std::string> &pages);
+
 int main(int argc, char **argv) {
   std::vector<std::vector<std::string>> chapters;
 
   Magick::InitializeMagick(*argv);
-  // get_files(chapters, "tmp");
+  /*
+  get_files(chapters, "tmp");
 
-  // create_dir("output");
-  // pdf_convert(chapters);
+  create_dir("output");
+  pdf_convert(chapters);
+  */
   pdf_combine("output", 4);
   return 0;
 };
@@ -106,7 +111,6 @@ void get_files(std::vector<std::vector<std::string>> &chapters,
 };
 
 void sort_files(std::vector<std::string> &pages) {
-
   if (pages.empty()) {
     spdlog::error("Pages vector is empty");
     return;
@@ -115,14 +119,37 @@ void sort_files(std::vector<std::string> &pages) {
   std::sort(pages.begin(), pages.end(), [](std::string &a, std::string &b) {
     return extract_num(a) < extract_num(b);
   });
-
   spdlog::info("{} have been sorted", dir_name.substr(1, dir_name.size()));
 };
 
+int __extract_num(std::string &file_name) {
+  size_t hyphen_pos = file_name.find('.');
+  if (hyphen_pos == std::string::npos)
+    return 0;
+
+  int num;
+  try {
+    num = std::stoi(file_name.substr(0, hyphen_pos));
+  } catch (std::exception error_) {
+    spdlog::error("{}", error_.what());
+    return -1;
+  }
+  return num;
+};
+
+void __sort_files(std::vector<std::string> &pages) {
+  if (pages.empty()) {
+    spdlog::error("Pages vector is empty");
+    return;
+  };
+  std::sort(pages.begin(), pages.end(), [](std::string &a, std::string &b) {
+    return __extract_num(a) < __extract_num(b);
+  });
+}
 void pdf_convert(std::vector<std::vector<std::string>> &chapters) {
   Magick::Image image;
   std::vector<Magick::Image> images;
-
+  int n = 1;
   try {
     for (auto pages : chapters) {
       for (auto files : pages)
@@ -133,10 +160,12 @@ void pdf_convert(std::vector<std::vector<std::string>> &chapters) {
         break;
       }
       auto [dir_name, file_name] = extract_name(pages[0]);
-      std::string pdf_name = dir_name.substr(1, dir_name.size()) + ".pdf";
+      std::string nn = std::to_string(n);
+      std::string pdf_name = nn + ".pdf";
       Magick::writeImages(images.begin(), images.end(), pdf_name);
       spdlog::info(" Converted {} to pdf", dir_name.substr(1, dir_name.size()));
       images.clear();
+      n++;
     };
   } catch (std::exception &error_) {
     spdlog::error("Magick++ error {}", error_.what());
@@ -193,19 +222,17 @@ void pdf_combine(std::string path, int num_ch) {
       if (dir->d_type == DT_DIR) {
         continue;
       };
-      std::string s(dir->d_name);
-      size_t dot_pos = s.find(".");
-      if (dot_pos == std::string::npos) {
-        std::cout << "here";
-        return;
-      }
 
-      std::string curr_extension = s.substr(dot_pos + 1, s.size() - 1);
-      std::string exe = "pdf";
-      if (std::strncmp(curr_extension.c_str(), exe.c_str(), 3) == 0) {
-        // pages.emplace_back(s);
-        pages.push_back(s);
-        curr_ch++;
+      std::string s(dir->d_name);
+
+      size_t dot_pos = s.find('.');
+
+      if (dot_pos != std::string::npos) {
+        std::string curr_extension = s.substr(dot_pos + 1);
+        if (curr_extension == "pdf") {
+          pages.emplace_back(s);
+          curr_ch++;
+        }
       }
     }
   } else {
@@ -213,22 +240,18 @@ void pdf_combine(std::string path, int num_ch) {
     closedir(dp);
     return;
   }
-  sort_files(pages);
+  __sort_files(pages);
   closedir(dp);
-
   try {
     std::vector<Magick::Image> img;
-
     for (const auto &file : pages) {
-
       std::vector<Magick::Image> currentPDF;
-      readImages(&currentPDF, file);
-
+      std::string p = "output/" + file;
+      readImages(&currentPDF, p);
       for (auto &page : currentPDF) {
         img.push_back(page);
       }
     }
-
     // Write all pages to a single PDF
     Magick::writeImages(img.begin(), img.end(), "vol1.pdf");
   } catch (std::exception &error) {
