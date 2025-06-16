@@ -34,11 +34,11 @@ int main(int argc, char **argv) {
   std::vector<std::vector<std::string>> chapters;
 
   Magick::InitializeMagick(*argv);
-  //get_files(chapters, "tmp");
+  // get_files(chapters, "tmp");
 
-  //create_dir("output");
-  //pdf_convert(chapters);
- pdf_combine("output", 4);
+  // create_dir("output");
+  // pdf_convert(chapters);
+  pdf_combine("output", 4);
   return 0;
 };
 
@@ -181,6 +181,21 @@ void move_files(std::string new_path, std::string extension) {
       if (strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0)
         continue;
 
+      std::string s(dir->d_name);
+      size_t dot_pos = s.find(".");
+      std::string curr_extension = s.substr(dot_pos + 1, s.size());
+
+      if (std::strcmp(curr_extension.c_str(), extension.c_str()) == 0) {
+        try {
+          std::string curr_path = std::filesystem::current_path().c_str();
+          std::string new_name = curr_path + new_path + s;
+          std::filesystem::rename(s, new_name);
+          spdlog::info("{} move successfully", s);
+        } catch (const std::filesystem::filesystem_error &e) {
+          spdlog::error("Error moving {} {}", s, e.what());
+          std::cerr << "Error moving file: " << e.what() << std::endl;
+        }
+      }
     }
   } else {
     spdlog::error("File does not exist");

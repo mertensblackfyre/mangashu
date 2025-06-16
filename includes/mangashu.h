@@ -27,14 +27,59 @@ class Mangashu {
 public:
   inline void pdf_convert();
 
+  inline int extract_num(std::string &filename);
+
 private:
   std::vector<std::vector<std::string>> chapters;
+  inline std::tuple<std::string, std::string>
+  extract_name(const std::string &path);
+
+  inline void sort_files(std::vector<std::string> &pages);
   inline void mangashu_create_dir(const std::string &dir);
   inline void mangashu_move_files(std::string &dir_name, std::string &extension,
                                   std::string &new_path);
   inline void mangashu_traverse_dir(const std::string &dir, std::string f);
 };
 
+int Mangashu::extract_num(std::string &filename) {
+
+  auto [dir_name, file_name] = extract_name(filename);
+  size_t hyphen_pos = file_name.find('-');
+  if (hyphen_pos == std::string::npos)
+    return 0;
+
+  int num;
+  try {
+    num = std::stoi(file_name.substr(0, hyphen_pos));
+  } catch (std::exception error_) {
+    spdlog::error("{}", error_.what());
+    return -1;
+  }
+  return num;
+};
+
+void Mangashu::sort_files(std::vector<std::string> &pages) {
+  if (pages.empty()) {
+    spdlog::error("Pages vector is empty");
+    return;
+  };
+  auto [dir_name, file_name] = extract_name(pages[0]);
+  std::sort(pages.begin(), pages.end(), [](std::string &a, std::string &b) {
+    return extract_num(a) < extract_num(b);
+  });
+  spdlog::info("{} have been sorted", dir_name.substr(1, dir_name.size()));
+};
+std::tuple<std::string, std::string>
+Mangashu::extract_name(const std::string &path) {
+
+  size_t first = path.find('/');
+  size_t second = path.find('/', first + 1);
+
+  std::string dir_name = path.substr(first, second - 3);
+  std::string file_name = path.substr(second + 1, path.size());
+
+  return {dir_name, file_name};
+};
 void Mangashu::pdf_convert() {
 
   //  Magick::Image image;
@@ -60,8 +105,7 @@ void Mangashu::pdf_convert() {
   } catch (std::exception &error_) {
     spdlog::error("Magick++ error {}", error_.what());
   }
-
-  mangashu_traverse_dir("output","m");
+  mangashu_traverse_dir("output", "m");
 }
 void Mangashu::mangashu_create_dir(const std::string &dir) {
   if (mkdir(dir.c_str(), 0777) == -1) {
@@ -101,7 +145,7 @@ void Mangashu::mangashu_traverse_dir(const std::string &dir_name,
 
       std::string s(dir->d_name);
       std::string exe = "pdf";
-      std::string exe1 = "/tmp/";
+      std::string exe1 = "/output/";
       if (f == "m")
         mangashu_move_files(s, exe, exe);
     }
