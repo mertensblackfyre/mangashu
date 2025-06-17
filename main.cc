@@ -31,14 +31,15 @@ int __extract_num(std::string &file_name);
 void __sort_files(std::vector<std::string> &pages);
 
 int main(int argc, char **argv) {
-  std::vector<std::vector<std::string>> chapters;
 
   Magick::InitializeMagick(*argv);
-  // get_files(chapters, "tmp");
 
-  // create_dir("output");
-  // pdf_convert(chapters);
-  pdf_combine("output", 4);
+  std::vector<std::vector<std::string>> chapters;
+  get_files(chapters, "nwq");
+
+  create_dir("output");
+  pdf_convert(chapters);
+  // pdf_combine("output", 4);
   return 0;
 };
 
@@ -84,27 +85,36 @@ void get_files(std::vector<std::vector<std::string>> &chapters,
   std::vector<std::string> pages;
 
   DIR *dp = opendir(path.c_str());
-  if (dp) {
-    while ((dir = readdir(dp)) != NULL) {
-      if (strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0)
-        continue;
-
-      if (dir->d_type == DT_DIR) {
-        std::string str_path = path + "/" + dir->d_name;
-        get_files(chapters, str_path);
-      } else {
-        std::string s(dir->d_name);
-        std::string final_path = path + "/" + dir->d_name;
-        pages.push_back(final_path);
-      };
-    }
-  } else {
-    spdlog::error("{} does not exist", path.c_str());
-    closedir(dp);
-    return;
+  if (!dp) {
+    spdlog::error("{} does not exist or cannot be opened", path.c_str());
+    return; // Don't call closedir() since opendir() failed
   }
+
+  std::string last_valid_name; // Store the last valid directory entry name
+
+  while ((dir = readdir(dp)) != nullptr) {
+    if (strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0)
+      continue;
+
+    last_valid_name = dir->d_name; // Store while dir is valid
+
+    if (dir->d_type == DT_DIR) {
+      std::string str_path = path + "/" + dir->d_name;
+      get_files(chapters, str_path);
+    } else {
+      std::string final_path = path + "/" + dir->d_name;
+      if (!final_path.empty()) {
+        pages.push_back(std::move(final_path));
+      }
+    }
+  }
+
   sort_files(pages);
-  chapters.emplace_back(pages);
+
+  // Use the stored name instead of dir->d_name
+  spdlog::info("Added directory contents to vector chapters. Last file: {}",
+               last_valid_name);
+  chapters.emplace_back(std::move(pages)); // More efficient than copying
   closedir(dp);
 };
 
@@ -146,17 +156,19 @@ void __sort_files(std::vector<std::string> &pages) {
 }
 void pdf_convert(std::vector<std::vector<std::string>> &chapters) {
   Magick::Image image;
-  std::vector<Magick::Image> images;
+  std::vector<Magick::Image> images(300);
   int n = 1;
   try {
     for (auto pages : chapters) {
-      for (auto files : pages)
+      for (auto files : pages) {
+        std::cout << files << std::endl;
         images.emplace_back(files);
-
+      }
       if (pages.empty()) {
         spdlog::error("Pages vector is empty");
         break;
       }
+      /*
       auto [dir_name, file_name] = extract_name(pages[0]);
       std::string nn = std::to_string(n);
       std::string pdf_name = nn + ".pdf";
@@ -164,12 +176,12 @@ void pdf_convert(std::vector<std::vector<std::string>> &chapters) {
       spdlog::info(" Converted {} to pdf", dir_name.substr(1, dir_name.size()));
       images.clear();
       n++;
+      */
     };
   } catch (std::exception &error_) {
     spdlog::error("Magick++ error {}", error_.what());
   }
-
-  move_files("/output/", "pdf");
+  // move_files("/output/", "pdf");
 }
 
 void move_files(std::string new_path, std::string extension) {
