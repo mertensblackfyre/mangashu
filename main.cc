@@ -1,270 +1,105 @@
-#include "spdlog/spdlog.h"
-#include <ImageMagick-7/Magick++.h>
-#include <ImageMagick-7/Magick++/Image.h>
-#include <ImageMagick-7/Magick++/Include.h>
-#include <ImageMagick-7/Magick++/STL.h>
 #include <algorithm>
-#include <cstddef>
-#include <cstring>
 #include <dirent.h>
-#include <exception>
-#include <filesystem>
+#include <hpdf.h>
 #include <iostream>
-#include <string>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <tuple>
-#include <unistd.h>
-#include <vector>
+#include <spdlog/spdlog.h>
 
-void create_dir(std::string dir);
-void move_files(std::string new_path, std::string extensions);
-void pdf_combine(std::string path, int num_ch);
-void pdf_convert(std::vector<std::vector<std::string>> &chapters);
-std::tuple<std::string, std::string> extract_name(const std::string &path);
-int extract_num(std::string &filename);
+void pdf_append(std::string image_name);
 void sort_files(std::vector<std::string> &pages);
-void get_files(std::vector<std::vector<std::string>> &chapters,
-               std::string path);
+void get_files(std::vector<std::string> &pages, std::string path);
+int extract_num(const std::string &fname);
 
-int __extract_num(std::string &file_name);
-void __sort_files(std::vector<std::string> &pages);
-
-int main(int argc, char **argv) {
-
-  Magick::InitializeMagick(*argv);
-
-  std::vector<std::vector<std::string>> chapters;
-  get_files(chapters, "nwq");
-
-  create_dir("output");
-  pdf_convert(chapters);
-  // pdf_combine("output", 4);
-  return 0;
-};
-
-void create_dir(std::string dir) {
-  if (mkdir(dir.c_str(), 0777) == -1) {
-    spdlog::error("{}", strerror(errno));
-  } else {
-    spdlog::info("output directory created");
-  }
-}
-std::tuple<std::string, std::string> extract_name(const std::string &path) {
-
-  size_t first = path.find('/');
-  size_t second = path.find('/', first + 1);
-
-  std::string dir_name = path.substr(first, second - 3);
-  std::string file_name = path.substr(second + 1, path.size());
-
-  return {dir_name, file_name};
-};
-
-int extract_num(std::string &filename) {
-
-  auto [dir_name, file_name] = extract_name(filename);
-  size_t hyphen_pos = file_name.find('-');
-  if (hyphen_pos == std::string::npos)
-    return 0;
-
-  int num;
-  try {
-    num = std::stoi(file_name.substr(0, hyphen_pos));
-  } catch (std::exception error_) {
-    spdlog::error("{}", error_.what());
-    return -1;
-  }
-  return num;
-};
-
-void get_files(std::vector<std::vector<std::string>> &chapters,
-               std::string path) {
-  struct dirent *dir;
-
+int main() {
   std::vector<std::string> pages;
+  get_files(pages, "ss");
 
+  for(auto h : pages)
+    std::cout << h << std::endl;
+  return 0;
+}
+
+void pdf_append(std::string image_name) {
+
+  HPDF_Doc pdf = HPDF_New(nullptr, nullptr);
+  if (!pdf) {
+    spdlog::error("Failed to create PDF object.");
+    return;
+  }
+  // Load image file (e.g., "image.jpg")
+  HPDF_Image image = HPDF_LoadJpegImageFromFile(pdf, "0.jpg");
+
+  HPDF_Page page = HPDF_AddPage(pdf);
+  HPDF_Page_SetSize(page, HPDF_PAGE_SIZE_A4, HPDF_PAGE_PORTRAIT);
+
+  HPDF_REAL page_width = HPDF_Page_GetWidth(page);
+  HPDF_REAL page_height = HPDF_Page_GetHeight(page);
+
+  HPDF_REAL img_width = HPDF_Image_GetWidth(image);
+  HPDF_REAL img_height = HPDF_Image_GetHeight(image);
+
+  // Calculate scale to fit image within page (preserve aspect ratio)
+  HPDF_REAL scale = std::min(page_width / img_width, page_height / img_height);
+
+  HPDF_REAL draw_width = img_width * scale;
+  HPDF_REAL draw_height = img_height * scale;
+
+  // Center the image on the page
+  HPDF_REAL x = (page_width - draw_width) / 2;
+  HPDF_REAL y = (page_height - draw_height) / 2;
+
+  HPDF_Page_DrawImage(page, image, x, y, draw_width, draw_height);
+
+  HPDF_SaveToFile(pdf, "output.pdf");
+  HPDF_Free(pdf);
+  spdlog::info("PDF created as output.pdf");
+};
+
+void get_files(std::vector<std::string> &pages, std::string path) {
+  struct dirent *dir;
   DIR *dp = opendir(path.c_str());
+
   if (!dp) {
     spdlog::error("{} does not exist or cannot be opened", path.c_str());
-    return; // Don't call closedir() since opendir() failed
+    return;
   }
-
-  std::string last_valid_name; // Store the last valid directory entry name
 
   while ((dir = readdir(dp)) != nullptr) {
     if (strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0)
       continue;
 
-    last_valid_name = dir->d_name; // Store while dir is valid
-
     if (dir->d_type == DT_DIR) {
-      std::string str_path = path + "/" + dir->d_name;
-      get_files(chapters, str_path);
-    } else {
-      std::string final_path = path + "/" + dir->d_name;
-      if (!final_path.empty()) {
-        pages.push_back(std::move(final_path));
-      }
+      continue;
+    };
+    std::string final_path = path + "/" + dir->d_name;
+    if (!final_path.empty()) {
+      pages.push_back(dir->d_name);
     }
   }
-
   sort_files(pages);
-
-  // Use the stored name instead of dir->d_name
-  spdlog::info("Added directory contents to vector chapters. Last file: {}",
-               last_valid_name);
-  chapters.emplace_back(std::move(pages)); // More efficient than copying
   closedir(dp);
 };
 
 void sort_files(std::vector<std::string> &pages) {
-  if (pages.empty()) {
-    spdlog::error("Pages vector is empty");
-    return;
-  };
-  auto [dir_name, file_name] = extract_name(pages[0]);
-  std::sort(pages.begin(), pages.end(), [](std::string &a, std::string &b) {
-    return extract_num(a) < extract_num(b);
-  });
-  spdlog::info("{} have been sorted", dir_name.substr(1, dir_name.size()));
+
+  std::sort(pages.begin(), pages.end(),
+            [](const std::string &lpage, const std::string &rpage) {
+                    int ln = extract_num(lpage);
+                    int rn = extract_num(rpage);
+                    return ln < rn;
+            });
 };
 
-int __extract_num(std::string &file_name) {
-  size_t hyphen_pos = file_name.find('.');
-  if (hyphen_pos == std::string::npos)
-    return 0;
+int extract_num(const std::string &fname) {
 
   int num;
+  size_t hyphen_pos = fname.find('-');
+  if (hyphen_pos == std::string::npos)
+    return 0;
   try {
-    num = std::stoi(file_name.substr(0, hyphen_pos));
+    num = std::stoi(fname.substr(0, hyphen_pos));
   } catch (std::exception error_) {
     spdlog::error("{}", error_.what());
     return -1;
   }
   return num;
-};
-
-void __sort_files(std::vector<std::string> &pages) {
-  if (pages.empty()) {
-    spdlog::error("Pages vector is empty");
-    return;
-  };
-  std::sort(pages.begin(), pages.end(), [](std::string &a, std::string &b) {
-    return __extract_num(a) < __extract_num(b);
-  });
-}
-void pdf_convert(std::vector<std::vector<std::string>> &chapters) {
-  Magick::Image image;
-  std::vector<Magick::Image> images(300);
-  int n = 1;
-  try {
-    for (auto pages : chapters) {
-      for (auto files : pages) {
-        std::cout << files << std::endl;
-        images.emplace_back(files);
-      }
-      if (pages.empty()) {
-        spdlog::error("Pages vector is empty");
-        break;
-      }
-      /*
-      auto [dir_name, file_name] = extract_name(pages[0]);
-      std::string nn = std::to_string(n);
-      std::string pdf_name = nn + ".pdf";
-      Magick::writeImages(images.begin(), images.end(), pdf_name);
-      spdlog::info(" Converted {} to pdf", dir_name.substr(1, dir_name.size()));
-      images.clear();
-      n++;
-      */
-    };
-  } catch (std::exception &error_) {
-    spdlog::error("Magick++ error {}", error_.what());
-  }
-  // move_files("/output/", "pdf");
-}
-
-void move_files(std::string new_path, std::string extension) {
-
-  struct dirent *dir;
-  DIR *dp = opendir(".");
-  if (dp) {
-    while ((dir = readdir(dp)) != NULL) {
-      if (strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0)
-        continue;
-
-      std::string s(dir->d_name);
-      size_t dot_pos = s.find(".");
-      std::string curr_extension = s.substr(dot_pos + 1, s.size());
-
-      if (std::strcmp(curr_extension.c_str(), extension.c_str()) == 0) {
-        try {
-          std::string curr_path = std::filesystem::current_path().c_str();
-          std::string new_name = curr_path + new_path + s;
-          std::filesystem::rename(s, new_name);
-          spdlog::info("{} move successfully", s);
-        } catch (const std::filesystem::filesystem_error &e) {
-          spdlog::error("Error moving {} {}", s, e.what());
-          std::cerr << "Error moving file: " << e.what() << std::endl;
-        }
-      }
-    }
-  } else {
-    spdlog::error("File does not exist");
-    closedir(dp);
-    return;
-  }
-}
-
-void pdf_combine(std::string path, int num_ch) {
-  struct dirent *dir;
-
-  int curr_ch = 0;
-  std::vector<std::string> pages;
-
-  DIR *dp = opendir(path.c_str());
-  if (dp) {
-    while ((dir = readdir(dp)) != NULL && curr_ch != num_ch) {
-
-      if (strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0)
-        continue;
-
-      if (dir->d_type == DT_DIR) {
-        continue;
-      };
-
-      std::string s(dir->d_name);
-
-      size_t dot_pos = s.find('.');
-
-      if (dot_pos != std::string::npos) {
-        std::string curr_extension = s.substr(dot_pos + 1);
-        if (curr_extension == "pdf") {
-          pages.emplace_back(s);
-          curr_ch++;
-        }
-      }
-    }
-  } else {
-    spdlog::error("{} does not exist", path.c_str());
-    closedir(dp);
-    return;
-  }
-  __sort_files(pages);
-  closedir(dp);
-  try {
-    std::vector<Magick::Image> img;
-    for (const auto &file : pages) {
-      std::vector<Magick::Image> currentPDF;
-      std::string p = "output/" + file;
-      readImages(&currentPDF, p);
-      for (auto &page : currentPDF) {
-        img.push_back(page);
-      }
-    }
-    // Write all pages to a single PDF
-    Magick::writeImages(img.begin(), img.end(), "vol1.pdf");
-  } catch (std::exception &error) {
-    spdlog::error("{}", error.what());
-  }
 };

@@ -1,35 +1,23 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.10)
 project(MangaShu)
 
-
-# In your CMakeLists.txt
-set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-set(MAGICKCORE_QUANTUM_DEPTH 16)  # Must match your installed version (Q16)
-set(MAGICKCORE_HDRI_ENABLE 0)     # Must match your installed version (0 for non-HDRI)
-
-find_package(ImageMagick COMPONENTS Magick++ MagickWand MagickCore REQUIRED)
+set(CMAKE_BUILD_TYPE Debug)
 
 find_package(spdlog REQUIRED)
 
 add_executable(MangaShu
-   main.cc
+    main.cc
 )
 
-target_compile_definitions(MangaShu PRIVATE
-    MAGICKCORE_QUANTUM_DEPTH=${MAGICKCORE_QUANTUM_DEPTH}
-    MAGICKCORE_HDRI_ENABLE=${MAGICKCORE_HDRI_ENABLE}
-)
-
+# Manually include libharu headers
 target_include_directories(MangaShu PRIVATE
-    ${ImageMagick_INCLUDE_DIRS}
+    /usr/include    # default path for libharu's hpdf.h on Arch
 )
 
+# Link to libhpdf manually
 target_link_libraries(MangaShu PRIVATE
-    ${ImageMagick_LIBRARIES}
+    hpdf
     spdlog::spdlog
 )
-
-
