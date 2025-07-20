@@ -11,12 +11,12 @@ add_executable(MangaShu
     main.cc
 )
 
-# Manually include libharu headers
 target_include_directories(MangaShu PRIVATE
-    /usr/include    # default path for libharu's hpdf.h on Arch
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    /usr/include   # for libharu headers on Arch
 )
 
-# Link to libhpdf manually
+# Link to libraries
 target_link_libraries(MangaShu PRIVATE
     hpdf
     spdlog::spdlog
