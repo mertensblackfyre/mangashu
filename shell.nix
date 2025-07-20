@@ -5,6 +5,5 @@ in
   pkgs.mkShell {
     packages = [
     pkgs.gcc
-    pkgs.imagemagickBig
 ];
   }

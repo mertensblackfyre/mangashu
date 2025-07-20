@@ -1,6 +1,7 @@
 #ifndef MANGASHU_H
 #define MANGASHU_H
 
+#include "utils.h"
 #include <hpdf.h>
 #include <iostream>
 #include <spdlog/spdlog.h>
@@ -27,12 +28,22 @@ inline void MangaShu::mangashu_chapter(std::string path,
     return;
   }
 
-  for (const auto &path : pages) {
-    // Load image file (e.g., "image.jpg")
-    std::string ppp = "ss/" + path;
-    HPDF_Image image = HPDF_LoadJpegImageFromFile(pdf, ppp.c_str());
+  for (const auto &file_name : pages) {
+    std::string ppp = path + "/" + file_name;
+    HPDF_Image image;
+    std::string ext = Utils::utils_get_extension(file_name);
+
+    if (ext == ".jpg") {
+      image = HPDF_LoadJpegImageFromFile(pdf, ppp.c_str());
+    } else if (ext == ".png") {
+      image = HPDF_LoadPngImageFromFile(pdf, ppp.c_str());
+    } else {
+      spdlog::error("Unknown extension: {}", ext);
+      return;
+    };
+
     if (!image) {
-      spdlog::error("Failed to load image: {}", path);
+      spdlog::error("Failed to load image: {}", file_name);
       continue;
     };
 
@@ -56,6 +67,7 @@ inline void MangaShu::mangashu_chapter(std::string path,
     HPDF_REAL y = (page_height - draw_height) / 2;
 
     HPDF_Page_DrawImage(page, image, x, y, draw_width, draw_height);
+    spdlog::info("Appended {} to the pdf",file_name);
   }
 
   HPDF_STATUS result = HPDF_SaveToFile(pdf, "output.pdf");
