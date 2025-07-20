@@ -67,14 +67,15 @@ inline void MangaShu::mangashu_chapter(std::string path,
     HPDF_REAL y = (page_height - draw_height) / 2;
 
     HPDF_Page_DrawImage(page, image, x, y, draw_width, draw_height);
-    spdlog::info("Appended {} to the pdf",file_name);
+    spdlog::info("Appended {} to the pdf", file_name);
   }
 
-  HPDF_STATUS result = HPDF_SaveToFile(pdf, "output.pdf");
+  std::string output = path + ".pdf";
+  HPDF_STATUS result = HPDF_SaveToFile(pdf, output.c_str());
   if (result != HPDF_OK) {
-    spdlog::error("Failed to save output.pdf");
+    spdlog::error("Failed to save {}",output);
   } else {
-    spdlog::info("PDF successfully saved to output.pdf");
+    spdlog::info("PDF successfully saved to {}", output);
   }
   return;
 };
