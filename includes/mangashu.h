@@ -10,8 +10,8 @@
 class MangaShu {
 
 public:
-  inline void mangashu_chapter(std::string path,
-                               const std::vector<std::string> &pages);
+  inline static void mangashu_chapter(std::string path,
+                                      const std::vector<std::string> &pages);
 };
 
 inline void MangaShu::mangashu_chapter(std::string path,
@@ -72,8 +72,9 @@ inline void MangaShu::mangashu_chapter(std::string path,
 
   std::string output = path + ".pdf";
   HPDF_STATUS result = HPDF_SaveToFile(pdf, output.c_str());
+
   if (result != HPDF_OK) {
-    spdlog::error("Failed to save {}",output);
+    spdlog::error("Failed to save {}", output);
   } else {
     spdlog::info("PDF successfully saved to {}", output);
   }

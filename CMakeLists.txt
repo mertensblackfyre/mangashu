@@ -12,7 +12,7 @@ add_executable(MangaShu
 )
 
 target_include_directories(MangaShu PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/includes
     /usr/include   # for libharu headers on Arch
 )
 

@@ -13,37 +13,9 @@
 class Utils {
 
 public:
-
   inline static std::string utils_get_extension(const std::string &f_name);
-  inline void sort_files(std::vector<std::string> &pages);
-  inline void get_files(std::vector<std::string> &pages, std::string path);
+  inline static void sort_files(std::vector<std::string> &pages);
   inline static int extract_num(const std::string &fname);
-};
-
-inline void Utils::get_files(std::vector<std::string> &pages,
-                             std::string path) {
-  struct dirent *dir;
-  DIR *dp = opendir(path.c_str());
-
-  if (!dp) {
-    spdlog::error("{} does not exist or cannot be opened", path.c_str());
-    return;
-  }
-
-  while ((dir = readdir(dp)) != nullptr) {
-    if (strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0)
-      continue;
-
-    if (dir->d_type == DT_DIR) {
-      continue;
-    };
-    std::string final_path = path + "/" + dir->d_name;
-    if (!final_path.empty()) {
-      pages.push_back(dir->d_name);
-    }
-  }
-  sort_files(pages);
-  closedir(dp);
 };
 
 inline void Utils::sort_files(std::vector<std::string> &pages) {
@@ -71,7 +43,7 @@ inline int Utils::extract_num(const std::string &fname) {
   return num;
 };
 
- inline std::string Utils::utils_get_extension(const std::string &f_name) {
+inline std::string Utils::utils_get_extension(const std::string &f_name) {
   size_t dot_pos = f_name.find('.');
   if (dot_pos == std::string::npos)
     return "";
