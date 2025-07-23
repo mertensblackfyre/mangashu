@@ -13,7 +13,5 @@ int main(int argc, char *argv[]) {
   std::string d_name = argv[1];
 
   Common::get_dirs(pages,d_name);
-  // utils.get_files(pages, d_name);
-  // main.mangashu_chapter(d_name, pages);
   return 0;
 }

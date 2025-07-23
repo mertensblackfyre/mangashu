@@ -11,11 +11,11 @@ class MangaShu {
 
 public:
   inline static void mangashu_chapter(std::string path,
-                                      const std::vector<std::string> &pages);
+                                      std::vector<std::string> &pages);
 };
 
 inline void MangaShu::mangashu_chapter(std::string path,
-                                       const std::vector<std::string> &pages) {
+                                        std::vector<std::string> &pages) {
 
   if (pages.empty()) {
     spdlog::warn("No images provided.");
@@ -78,6 +78,7 @@ inline void MangaShu::mangashu_chapter(std::string path,
   } else {
     spdlog::info("PDF successfully saved to {}", output);
   }
+  pages.clear();
   return;
 };
 
