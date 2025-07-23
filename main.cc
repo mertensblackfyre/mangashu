@@ -11,7 +11,8 @@ int main(int argc, char *argv[]) {
   }
 
   std::string d_name = argv[1];
-
   Common::get_dirs(pages,d_name);
+
+
   return 0;
 }

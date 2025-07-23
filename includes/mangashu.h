@@ -6,15 +6,17 @@
 #include <iostream>
 #include <spdlog/spdlog.h>
 #include <vector>
+#include <podofo/podofo.h>
 
 class MangaShu {
 
 public:
-  inline static void mangashu_chapter(std::string path,
+  inline void mangashu_merge_chapters(std::string &path);
+  inline static void mangashu_chapter(std::string &path,
                                       std::vector<std::string> &pages);
 };
 
-inline void MangaShu::mangashu_chapter(std::string path,
+inline void MangaShu::mangashu_chapter(std::string &path,
                                         std::vector<std::string> &pages) {
 
   if (pages.empty()) {
@@ -80,6 +82,11 @@ inline void MangaShu::mangashu_chapter(std::string path,
   }
   pages.clear();
   return;
+};
+
+
+inline void mangashu_merge_chapters(){
+
 };
 
 #endif

@@ -37,7 +37,6 @@ inline void Common::get_dirs(std::vector<std::string> &pages,
     if (dir->d_type == DT_DIR) {
       spdlog::info("Traversing {}", dir->d_name);
       get_files(pages, dir->d_name, path);
-
       continue;
     };
   }
