@@ -16,6 +16,8 @@ public:
   inline static std::string utils_get_extension(const std::string &f_name);
   inline static void sort_files(std::vector<std::string> &pages);
   inline static int extract_num(const std::string &fname);
+  inline static void merge_pdfs(const std::vector<std::string> &input_files,
+                                const std::string &output_file);
 };
 
 inline void Utils::sort_files(std::vector<std::string> &pages) {
@@ -56,4 +58,23 @@ inline std::string Utils::utils_get_extension(const std::string &f_name) {
   }
   return ext;
 };
+
+inline void Utils::merge_pdfs(const std::vector<std::string> &input_files,
+                              const std::string &output_file){
+QPDF output_pdf;
+   output_pdf.emptyPDF();  // Start with an empty PDF
+
+   QPDFPageDocumentHelper output_helper(output_pdf);
+   std::vector<QPDFObjectHandle> all_pages;
+
+   for (const auto& file : input_files) {
+       QPDF input_pdf;
+       input_pdf.processFile(file.c_str());
+       QPDFPageDocumentHelper input_helper(input_pdf);
+       std::vector<QPDFPageObjectHelper> pages = input_helper.getAllPages();
+
+       for (auto& page : pages) {
+           all_pages.push_back(page.getObjectHandle());
+       }
+                              };
 #endif

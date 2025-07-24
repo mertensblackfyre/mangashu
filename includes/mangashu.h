@@ -2,22 +2,25 @@
 #define MANGASHU_H
 
 #include "utils.h"
+#include <algorithm>
 #include <hpdf.h>
 #include <iostream>
-#include <spdlog/spdlog.h>
-#include <vector>
 #include <podofo/podofo.h>
+#include <spdlog/spdlog.h>
+#include <string>
+#include <unistd.h>
+#include <vector>
 
 class MangaShu {
 
 public:
-  inline void mangashu_merge_chapters(std::string &path);
+  inline static void mangashu_merge_chapters(const std::string &path);
   inline static void mangashu_chapter(std::string &path,
                                       std::vector<std::string> &pages);
 };
 
 inline void MangaShu::mangashu_chapter(std::string &path,
-                                        std::vector<std::string> &pages) {
+                                       std::vector<std::string> &pages) {
 
   if (pages.empty()) {
     spdlog::warn("No images provided.");
@@ -32,6 +35,8 @@ inline void MangaShu::mangashu_chapter(std::string &path,
 
   for (const auto &file_name : pages) {
     std::string ppp = path + "/" + file_name;
+
+    std::cout << ppp << std::endl;
     HPDF_Image image;
     std::string ext = Utils::utils_get_extension(file_name);
 
@@ -80,13 +85,61 @@ inline void MangaShu::mangashu_chapter(std::string &path,
   } else {
     spdlog::info("PDF successfully saved to {}", output);
   }
+
   pages.clear();
   return;
 };
 
+inline void MangaShu::mangashu_merge_chapters(const std::string &path) {
 
-inline void mangashu_merge_chapters(){
+  std::vector<std::string> pdfs;
+  struct dirent *dir;
+  DIR *dp = opendir(path.c_str());
 
+  if (!dp) {
+    spdlog::error("{} does not exist or cannot be opened", path.c_str());
+    return;
+  }
+
+  while ((dir = readdir(dp)) != nullptr) {
+    if (strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0)
+      continue;
+
+    if (dir->d_type == DT_DIR)
+      continue;
+
+    std::string s = dir->d_name;
+    pdfs.emplace_back(s);
+  }
+
+  std::sort(pdfs.begin(), pdfs.end(),
+            [](const std::string &lpage, const std::string &rpage) {
+              int ln, rn;
+              try {
+                ln = std::stoi(lpage.substr(lpage.size() - 7, 3));
+                rn = std::stoi(rpage.substr(rpage.size() - 7, 3));
+              } catch (std::exception error_) {
+                spdlog::error("{}", error_.what());
+              }
+              return ln < rn;
+            });
+
+  const char *outputFile = "vol12";
+
+  try {
+    PoDoFo::PdfMemDocument outDoc;
+
+    for (int i = 0; i < pdfs.size(); ++i) {
+      PoDoFo::PdfMemDocument inDoc(pdfs[i]);
+      outDoc.append(inDoc,true);
+    }
+    outDoc.WriteToFile(outputFile);
+    printf("Merged PDF saved to: %s\n", outputFile);
+  } catch (const PoDoFo::PdfError &err) {
+    spdlog::warn("Error: {}", err.what());
+  }
+  closedir(dp);
+  return;
 };
 
 #endif

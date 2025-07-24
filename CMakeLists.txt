@@ -19,5 +19,6 @@ target_include_directories(MangaShu PRIVATE
 # Link to libraries
 target_link_libraries(MangaShu PRIVATE
     hpdf
+    podofo
     spdlog::spdlog
 )
