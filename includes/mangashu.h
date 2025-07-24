@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <hpdf.h>
 #include <iostream>
-#include <podofo/podofo.h>
 #include <spdlog/spdlog.h>
 #include <string>
 #include <unistd.h>
@@ -14,7 +13,8 @@
 class MangaShu {
 
 public:
-  inline static void mangashu_merge_chapters(const std::string &path);
+  inline static void mangashu_merge_chapters(const std::string &path,
+                                             const std::string &output);
   inline static void mangashu_chapter(std::string &path,
                                       std::vector<std::string> &pages);
 };
@@ -90,7 +90,8 @@ inline void MangaShu::mangashu_chapter(std::string &path,
   return;
 };
 
-inline void MangaShu::mangashu_merge_chapters(const std::string &path) {
+inline void MangaShu::mangashu_merge_chapters(const std::string &path,
+                                              const std::string &output) {
 
   std::vector<std::string> pdfs;
   struct dirent *dir;
@@ -108,7 +109,7 @@ inline void MangaShu::mangashu_merge_chapters(const std::string &path) {
     if (dir->d_type == DT_DIR)
       continue;
 
-    std::string s = dir->d_name;
+    std::string s = path + "/" + dir->d_name;
     pdfs.emplace_back(s);
   }
 
@@ -124,20 +125,8 @@ inline void MangaShu::mangashu_merge_chapters(const std::string &path) {
               return ln < rn;
             });
 
-  const char *outputFile = "vol12";
 
-  try {
-    PoDoFo::PdfMemDocument outDoc;
-
-    for (int i = 0; i < pdfs.size(); ++i) {
-      PoDoFo::PdfMemDocument inDoc(pdfs[i]);
-      outDoc.append(inDoc,true);
-    }
-    outDoc.WriteToFile(outputFile);
-    printf("Merged PDF saved to: %s\n", outputFile);
-  } catch (const PoDoFo::PdfError &err) {
-    spdlog::warn("Error: {}", err.what());
-  }
+  Utils::merge_pdfs(pdfs, output);
   closedir(dp);
   return;
 };

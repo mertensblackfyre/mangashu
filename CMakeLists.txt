@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_BUILD_TYPE Debug)
 
 find_package(spdlog REQUIRED)
+find_package(qpdf REQUIRED)
 
 add_executable(MangaShu
     main.cc
@@ -19,6 +20,6 @@ target_include_directories(MangaShu PRIVATE
 # Link to libraries
 target_link_libraries(MangaShu PRIVATE
     hpdf
-    podofo
+     qpdf::libqpdf
     spdlog::spdlog
 )
